@@ -99,6 +99,22 @@ void addition_cl(const _FP16 *input, _FP16 *res, unsigned int size_input,
                               size_res);
 }
 
+void rmsnorm_cl(const _FP16 *input, const _FP16 *gamma, _FP16 *result,
+                const float epsilon, unsigned int height, unsigned int width,
+                bool use_svm) {
+  auto *blas_cc =
+    static_cast<ClContext *>(Engine::Global().getRegisteredContext("gpu"));
+
+  ClContext::SharedPtrClKernel kernel_rmsnorm_ptr =
+    blas_cc->registerClKernel(getRMSNormClKernel(), "rmsnorm_cl_fp16");
+  if (!kernel_rmsnorm_ptr) {
+    return;
+  }
+
+  rmsnorm_cl_internal<_FP16>(kernel_rmsnorm_ptr, input, gamma, result, epsilon,
+                             height, width, use_svm);
+}
+
 void sscal_cl(_FP16 *X, const unsigned int N, const float alpha) {
   auto *blas_cc =
     static_cast<ClContext *>(Engine::Global().getRegisteredContext("gpu"));
